@@ -1,0 +1,115 @@
+#include "schedule.h"
+#include "piano.h"
+#include <Arduino.h>
+
+Piano piano;
+
+Schedule::Schedule() {}
+
+void Schedule::tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity) {
+  Serial.print("Received note on: ");
+  Serial.print(noteId);
+  Serial.print(" with velocity: ");
+  Serial.println(velocity);
+  if (noteId >= MIN_NOTE_ID && noteId <= MAX_NOTE_ID) {
+    Note note = piano.find(noteId);
+    bool isActive = note.getIsActive();
+    unsigned long isActiveSetAt = note.getIsActiveSetAt();
+
+    // Only schedule a note if it is not currently active. If the note has been
+    // recently deactivated but hasn't had time to reset, delay the activation just a bit.
+    if (!isActive) {
+      if (isActiveSetAt + DEACTIVATE_TIME_REQUIRED >= millis()) {
+        scheduleNoteOn(note, velocity);
+      } else {
+        unsigned long delayedTime = isActiveSetAt + DEACTIVATE_TIME_REQUIRED;
+        scheduleNoteOn(note, velocity, delayedTime);
+      }
+    }
+  }
+}
+
+void Schedule::scheduleNoteOn(Note note, int velocity, unsigned long delayedTime /*= millis()*/) { 
+  PCA9635 *board = note.getBoard();
+  int index = note.getBoardIndex();
+  int mappedVelocity = note.calculateVelocity(velocity);
+  
+  note.setIsActive(true, delayedTime);
+  commands.push_back(Command(board, index, ON_PWM, delayedTime));
+  commands.push_back(Command(board, index, mappedVelocity, delayedTime + STARTUP_DURATION));
+  commands.push_back(Command(board, index, NOTE_HOLD_PWM, delayedTime + TOTAL_ON_DURATION));
+}
+
+void Schedule::tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity) {
+  Serial.print("Received note off: ");
+  Serial.print(noteId);
+  Serial.print(" with velocity: ");
+  Serial.println(velocity);
+  if (noteId >= MIN_NOTE_ID && noteId <= MAX_NOTE_ID) {
+    Note note = piano.find(noteId);
+    bool isActive = note.getIsActive();
+    unsigned long isActiveSetAt = note.getIsActiveSetAt();
+    unsigned long now = millis();
+
+    // Only schedule a note off if the note is currently active. If the note has been
+    // recently activated but hasn't had time to play, delay the activation for just a bit.
+    if (isActive) {
+      if (isActiveSetAt + TOTAL_ON_DURATION >= now) {
+        commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, now));
+      } else {
+        unsigned long delayedTime = isActiveSetAt + TOTAL_ON_DURATION;
+        commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, delayedTime));
+      }
+    }
+  }
+}
+
+// TODO: sustain needs to use a board
+void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
+  bool isActive = piano.getSustainIsActive();
+  unsigned long isActiveSetAt = piano.getSustainIsActiveSetAt();
+  unsigned long now = millis();
+  if (value >= SUSTAIN_CONTROL_NUMBER) { // turn on sustain
+    if (!isActive) {
+      if (isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED >= millis()) {
+        scheduleSustainOn();
+      } else {
+        unsigned long delayedTime = isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED;
+        scheduleSustainOn(delayedTime);
+      }
+    }
+  } else {
+    if (isActive) {
+      if (isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION >= now) {
+        commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, now));
+      } else {
+        unsigned long delayedTime = isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION;
+        commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, delayedTime));
+      }
+    }
+  }
+}
+
+void Schedule::scheduleSustainOn(unsigned long delayedTime /*=millis()*/) {
+  PCA9635 *board = piano.getSustainBoard();
+  
+  piano.setSustainIsActive(true, delayedTime);
+  commands.push_back(Command(board, SUSTAIN_INDEX, ON_PWM, delayedTime));
+  commands.push_back(Command(board, SUSTAIN_INDEX, SUSTAIN_VELOCITY, delayedTime + SUSTAIN_STARTUP_DURATION));
+  commands.push_back(Command(board, SUSTAIN_INDEX, SUSTAIN_HOLD_PWM, delayedTime + SUSTAIN_TOTAL_ON_DURATION));
+}
+
+void Schedule::execute() {
+  for (auto it = commands.begin(); it != commands.end(); it++) {
+    if (it->getRunAt() >= millis()) {
+      // TODO: make this talk to the electronics instead
+      // it->getBoard()->write1(it->getI2cIndex(), it->getPwm());
+      Serial.print("RUNNING COMMAND: ");
+      Serial.print("Board index: ");
+      Serial.print(it->getI2cIndex());
+      Serial.print("PWM: ");
+      Serial.println(it->getPwm());
+      commands.erase(it--);
+    }
+  }
+}
