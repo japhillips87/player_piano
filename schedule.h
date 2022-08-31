@@ -13,7 +13,7 @@ class Schedule {
     void tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity);
     void tryToScheduleSustain(uint8_t number, uint8_t value);
     void scheduleSustainOn(unsigned long delayedTime = millis());
-    void scheduleNoteOn(Note note, int velocity, unsigned long delayedTime = millis());
+    void scheduleNoteOn(Note &note, int velocity, unsigned long delayedTime = millis());
     void execute();
 };
 

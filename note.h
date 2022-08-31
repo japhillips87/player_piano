@@ -21,7 +21,7 @@ class Note {
     unsigned long isActiveSetAt;
     
   public:
-    Note(int midiId, PCA9635 *board, int boardIndex, int minVelocity, int maxVelocity, bool isActive);
+    Note(int midiId, PCA9635 *board, int boardIndex, int minVelocity, int maxVelocity);
 
     void setIsActive(bool isActive, unsigned long now);
     PCA9635 *getBoard();

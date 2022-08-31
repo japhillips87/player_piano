@@ -15,19 +15,21 @@ const int SUSTAIN_CONTROL_NUMBER = 64;
 const int SUSTAIN_INDEX = 15;
 
 class Piano {
-  vector<Note> notes;
   bool sustainIsActive;
   unsigned long sustainIsActiveSetAt;
   PCA9635 *sustainBoard;
   
   public:
     Piano();
-    Note find(int id);
+    void initialize();
+    Note& find(int id);
     bool getSustainIsActive();
     unsigned long getSustainIsActiveSetAt();
     void setSustainIsActive(bool isActive, unsigned long now);
     void setSustainBoard(PCA9635 *board);
     PCA9635 *getSustainBoard();
+    void addNote(Note &note);
+    vector<Note> notes;
 };
 
 extern Piano piano;

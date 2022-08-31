@@ -2,24 +2,19 @@
 #include "piano.h"
 #include <Arduino.h>
 
-Piano piano;
-
 Schedule::Schedule() {}
 
 void Schedule::tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity) {
-  Serial.print("Received note on: ");
-  Serial.print(noteId);
-  Serial.print(" with velocity: ");
-  Serial.println(velocity);
   if (noteId >= MIN_NOTE_ID && noteId <= MAX_NOTE_ID) {
-    Note note = piano.find(noteId);
+    Note &note = piano.find(noteId);
     bool isActive = note.getIsActive();
     unsigned long isActiveSetAt = note.getIsActiveSetAt();
-
+    // TODO: this makes things very sluggish if notes are played really fast. delaying adds up after time.
+    
     // Only schedule a note if it is not currently active. If the note has been
     // recently deactivated but hasn't had time to reset, delay the activation just a bit.
     if (!isActive) {
-      if (isActiveSetAt + DEACTIVATE_TIME_REQUIRED >= millis()) {
+      if (isActiveSetAt + DEACTIVATE_TIME_REQUIRED <= millis()) {
         scheduleNoteOn(note, velocity);
       } else {
         unsigned long delayedTime = isActiveSetAt + DEACTIVATE_TIME_REQUIRED;
@@ -29,7 +24,7 @@ void Schedule::tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity) {
   }
 }
 
-void Schedule::scheduleNoteOn(Note note, int velocity, unsigned long delayedTime /*= millis()*/) { 
+void Schedule::scheduleNoteOn(Note &note, int velocity, unsigned long delayedTime /*= millis()*/) { 
   PCA9635 *board = note.getBoard();
   int index = note.getBoardIndex();
   int mappedVelocity = note.calculateVelocity(velocity);
@@ -41,12 +36,8 @@ void Schedule::scheduleNoteOn(Note note, int velocity, unsigned long delayedTime
 }
 
 void Schedule::tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity) {
-  Serial.print("Received note off: ");
-  Serial.print(noteId);
-  Serial.print(" with velocity: ");
-  Serial.println(velocity);
   if (noteId >= MIN_NOTE_ID && noteId <= MAX_NOTE_ID) {
-    Note note = piano.find(noteId);
+    Note &note = piano.find(noteId);
     bool isActive = note.getIsActive();
     unsigned long isActiveSetAt = note.getIsActiveSetAt();
     unsigned long now = millis();
@@ -54,24 +45,26 @@ void Schedule::tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity) {
     // Only schedule a note off if the note is currently active. If the note has been
     // recently activated but hasn't had time to play, delay the activation for just a bit.
     if (isActive) {
-      if (isActiveSetAt + TOTAL_ON_DURATION >= now) {
+      if (isActiveSetAt + TOTAL_ON_DURATION <= now) {
+        note.setIsActive(false, now);
         commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, now));
       } else {
         unsigned long delayedTime = isActiveSetAt + TOTAL_ON_DURATION;
+        note.setIsActive(false, delayedTime);
         commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, delayedTime));
       }
     }
   }
 }
 
-// TODO: sustain needs to use a board
+// TODO: need to test this
 void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
   bool isActive = piano.getSustainIsActive();
   unsigned long isActiveSetAt = piano.getSustainIsActiveSetAt();
   unsigned long now = millis();
   if (value >= SUSTAIN_CONTROL_NUMBER) { // turn on sustain
     if (!isActive) {
-      if (isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED >= millis()) {
+      if (isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED <= millis()) {
         scheduleSustainOn();
       } else {
         unsigned long delayedTime = isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED;
@@ -80,7 +73,7 @@ void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
     }
   } else {
     if (isActive) {
-      if (isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION >= now) {
+      if (isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION <= now) {
         commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, now));
       } else {
         unsigned long delayedTime = isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION;
@@ -100,14 +93,15 @@ void Schedule::scheduleSustainOn(unsigned long delayedTime /*=millis()*/) {
 }
 
 void Schedule::execute() {
+  // TODO: figure out the command that is running when you end playback
   for (auto it = commands.begin(); it != commands.end(); it++) {
-    if (it->getRunAt() >= millis()) {
+    if (it->getRunAt() <= millis()) {
       // TODO: make this talk to the electronics instead
       // it->getBoard()->write1(it->getI2cIndex(), it->getPwm());
       Serial.print("RUNNING COMMAND: ");
       Serial.print("Board index: ");
       Serial.print(it->getI2cIndex());
-      Serial.print("PWM: ");
+      Serial.print(", PWM: ");
       Serial.println(it->getPwm());
       commands.erase(it--);
     }

@@ -1,12 +1,13 @@
 #include "note.h"
 
-Note::Note(int midiId, PCA9635 *board, int boardIndex, int minVelocity, int maxVelocity, bool isActive) {
+Note::Note(int midiId, PCA9635 *board, int boardIndex, int minVelocity, int maxVelocity) {
   this->midiId = midiId;
   this->board = board;
   this->boardIndex = boardIndex;
   this->minVelocity = minVelocity;
   this->maxVelocity = maxVelocity;
-  this->setIsActive(isActive, millis());
+  this->isActive = false;
+  this->isActiveSetAt = millis();
 }
 
 PCA9635 *Note::getBoard() { return this->board; }
