@@ -12,7 +12,8 @@ using namespace std;
 const int MIN_NOTE_ID = 21;
 const int MAX_NOTE_ID = 108;
 const int SUSTAIN_CONTROL_NUMBER = 64;
-const int SUSTAIN_INDEX = 15;
+const int SUSTAIN_THRESHOLD = 64;
+const int SUSTAIN_INDEX = 13;
 
 class Piano {
   bool sustainIsActive;

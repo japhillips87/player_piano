@@ -62,24 +62,24 @@ void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
   bool isActive = piano.getSustainIsActive();
   unsigned long isActiveSetAt = piano.getSustainIsActiveSetAt();
   unsigned long now = millis();
-  if (value >= SUSTAIN_CONTROL_NUMBER) { // turn on sustain
-    if (!isActive) {
+  if (number == SUSTAIN_CONTROL_NUMBER) {
+    if (value >= SUSTAIN_THRESHOLD && !isActive) {
       if (isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED <= millis()) {
         scheduleSustainOn();
       } else {
         unsigned long delayedTime = isActiveSetAt + SUSTAIN_DEACTIVATE_TIME_REQUIRED;
         scheduleSustainOn(delayedTime);
       }
-    }
-  } else {
-    if (isActive) {
+    } else if (value <= SUSTAIN_THRESHOLD && isActive) {
       if (isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION <= now) {
         commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, now));
       } else {
         unsigned long delayedTime = isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION;
         commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, delayedTime));
       }
-    }
+    }   
+  } else if (number == 123) {
+    // TODO: handle the all notes off control change (123). just loop through and turn everything off.
   }
 }
 
