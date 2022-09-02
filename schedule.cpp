@@ -10,7 +10,7 @@ void Schedule::tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity) {
     bool isActive = note.getIsActive();
     unsigned long isActiveSetAt = note.getIsActiveSetAt();
     // TODO: this makes things very sluggish if notes are played really fast. delaying adds up after time.
-    
+
     // Only schedule a note if it is not currently active. If the note has been
     // recently deactivated but hasn't had time to reset, delay the activation just a bit.
     if (!isActive) {
@@ -24,11 +24,11 @@ void Schedule::tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity) {
   }
 }
 
-void Schedule::scheduleNoteOn(Note &note, int velocity, unsigned long delayedTime /*= millis()*/) { 
+void Schedule::scheduleNoteOn(Note &note, int velocity, unsigned long delayedTime /*= millis()*/) {
   PCA9635 *board = note.getBoard();
   int index = note.getBoardIndex();
   int mappedVelocity = note.calculateVelocity(velocity);
-  
+
   note.setIsActive(true, delayedTime);
   commands.push_back(Command(board, index, ON_PWM, delayedTime));
   commands.push_back(Command(board, index, mappedVelocity, delayedTime + STARTUP_DURATION));
@@ -77,19 +77,51 @@ void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
         unsigned long delayedTime = isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION;
         commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, delayedTime));
       }
-    }   
+    }
   } else if (number == 123) {
-    // TODO: handle the all notes off control change (123). just loop through and turn everything off.
+    allOff();
   }
 }
 
 void Schedule::scheduleSustainOn(unsigned long delayedTime /*=millis()*/) {
   PCA9635 *board = piano.getSustainBoard();
-  
+
   piano.setSustainIsActive(true, delayedTime);
   commands.push_back(Command(board, SUSTAIN_INDEX, ON_PWM, delayedTime));
   commands.push_back(Command(board, SUSTAIN_INDEX, SUSTAIN_VELOCITY, delayedTime + SUSTAIN_STARTUP_DURATION));
   commands.push_back(Command(board, SUSTAIN_INDEX, SUSTAIN_HOLD_PWM, delayedTime + SUSTAIN_TOTAL_ON_DURATION));
+}
+
+void Schedule::connected() {
+  unsigned long delay = millis();
+  int noteIds[] = { 74, 81, 86 };
+
+  for (int noteId: noteIds) {
+    Note &note = piano.find(noteId);
+    scheduleNoteOn(note, note.calculateVelocity(64), delay);
+    // TODO: schedule the notes off too
+    delay += BLUETOOTH_SOUND_DELAY;
+  }
+}
+
+void Schedule::disconnected() {
+  unsigned long delay = millis();
+  int noteIds[] = { 86, 81, 74 };
+
+  for (int noteId: noteIds) {
+    Note &note = piano.find(noteId);
+    scheduleNoteOn(note, note.calculateVelocity(64), delay);
+    // TODO: schedule the notes off too
+    delay += BLUETOOTH_SOUND_DELAY;
+  }
+}
+
+void Schedule::poweredOn() {
+  // TODO: play happy Bb chord like Device Orchestra does
+}
+
+void Schedule::allOff() {
+  // TODO: handle the all notes off control change (123). just loop through and turn everything off.
 }
 
 void Schedule::execute() {

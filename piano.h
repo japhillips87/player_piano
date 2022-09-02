@@ -19,7 +19,7 @@ class Piano {
   bool sustainIsActive;
   unsigned long sustainIsActiveSetAt;
   PCA9635 *sustainBoard;
-  
+
   public:
     Piano();
     void initialize();

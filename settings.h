@@ -17,3 +17,4 @@ const int SUSTAIN_HOLD_PWM = 50;
 const int SUSTAIN_DEACTIVATE_TIME_REQUIRED = 200;
 const int SDA_PIN = 21;
 const int SCL_pin = 22;
+const int BLUETOOTH_SOUND_DELAY = 250;
