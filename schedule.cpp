@@ -35,6 +35,16 @@ void Schedule::scheduleNoteOn(Note &note, int velocity, unsigned long delayedTim
   commands.push_back(Command(board, index, NOTE_HOLD_PWM, delayedTime + TOTAL_ON_DURATION));
 }
 
+void Schedule::scheduleNoteOff(Note &note, unsigned long delayedTime /* = millis()*/) {
+  note.setIsActive(false, delayedTime);
+  commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, delayedTime));
+}
+
+void Schedule::scheduleNoteOnForDuration(Note &note, int velocity, unsigned long delayedTime, int duration) {
+  scheduleNoteOn(note, velocity, delayedTime);
+  scheduleNoteOff(note, delayedTime + duration);
+}
+
 void Schedule::tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity) {
   if (noteId >= MIN_NOTE_ID && noteId <= MAX_NOTE_ID) {
     Note &note = piano.find(noteId);
@@ -46,12 +56,10 @@ void Schedule::tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity) {
     // recently activated but hasn't had time to play, delay the activation for just a bit.
     if (isActive) {
       if (isActiveSetAt + TOTAL_ON_DURATION <= now) {
-        note.setIsActive(false, now);
-        commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, now));
+        scheduleNoteOff(note);
       } else {
         unsigned long delayedTime = isActiveSetAt + TOTAL_ON_DURATION;
-        note.setIsActive(false, delayedTime);
-        commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, delayedTime));
+        scheduleNoteOff(note, delayedTime);
       }
     }
   }
@@ -98,8 +106,7 @@ void Schedule::connected() {
 
   for (int noteId: noteIds) {
     Note &note = piano.find(noteId);
-    scheduleNoteOn(note, note.calculateVelocity(64), delay);
-    // TODO: schedule the notes off too
+    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay, BLUETOOTH_SOUND_DURATION);
     delay += BLUETOOTH_SOUND_DELAY;
   }
 }
@@ -110,22 +117,29 @@ void Schedule::disconnected() {
 
   for (int noteId: noteIds) {
     Note &note = piano.find(noteId);
-    scheduleNoteOn(note, note.calculateVelocity(64), delay);
-    // TODO: schedule the notes off too
+    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay, BLUETOOTH_SOUND_DURATION);
     delay += BLUETOOTH_SOUND_DELAY;
   }
 }
 
 void Schedule::poweredOn() {
-  // TODO: play happy Bb chord like Device Orchestra does
+  unsigned long delay = millis();
+  int noteIds[] = { 34, 46, 50, 53, 58, 62, 65, 70, 74, 77, 82 };
+
+  for (int noteId: noteIds) {
+    Note &note = piano.find(noteId);
+    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay, POWER_SOUND_DURATION_ONE);
+    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay + POWER_SOUND_DELAY, POWER_SOUND_DURATION_TWO);
+  }
 }
 
 void Schedule::allOff() {
-  // TODO: handle the all notes off control change (123). just loop through and turn everything off.
+  for (Note &note: piano.notes) {
+    scheduleNoteOff(note);
+  }
 }
 
 void Schedule::execute() {
-  // TODO: figure out the command that is running when you end playback
   for (auto it = commands.begin(); it != commands.end(); it++) {
     if (it->getRunAt() <= millis()) {
       // TODO: make this talk to the electronics instead
