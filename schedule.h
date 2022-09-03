@@ -6,7 +6,6 @@
 #pragma once
 
 class Schedule {
-  vector<Command> commands;
   public:
     Schedule();
     void tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity);
@@ -21,6 +20,7 @@ class Schedule {
     void allOff();
     void poweredOn();
     void execute();
+    vector<Command> commands;
 };
 
 extern Schedule schedule;

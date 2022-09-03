@@ -18,9 +18,6 @@ Note& Piano::find(int id) {
 }
 
 void Piano::initialize() {
-  // TODO: add happy sound to play when the piano is initalized.
-  // I think that Bb1-Bb2-D3-F3-Bb3-D4-F4-Bb4-D5-F5-Bb5 played quick then sustained would sound nice.
-  // Device Orchestra uses a Bb chord like this and I like the way it sounds.
   PCA9635 board1(0x40);
   PCA9635 board2(0x42);
   PCA9635 board3(0x42);

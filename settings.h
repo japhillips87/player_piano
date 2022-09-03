@@ -19,8 +19,8 @@ const int SUSTAIN_DEACTIVATE_TIME_REQUIRED = 200;
 const int SDA_PIN = 21;
 const int SCL_pin = 22;
 // TODO: calibrate these values
-const int BLUETOOTH_SOUND_DELAY = 50;
-const int BLUETOOTH_SOUND_DURATION = 500;
-const int POWER_SOUND_DURATION_ONE = 100;
+const int BLUETOOTH_SOUND_DELAY = 75;
+const int BLUETOOTH_SOUND_DURATION = 300;
+const int POWER_SOUND_DURATION_ONE = 200;
 const int POWER_SOUND_DURATION_TWO = 1000;
 const int POWER_SOUND_DELAY = 100;
