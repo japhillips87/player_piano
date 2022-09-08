@@ -19,7 +19,7 @@ Note& Piano::find(int id) {
 
 void Piano::initialize() {
   PCA9635 board1(0x40);
-  PCA9635 board2(0x42);
+  PCA9635 board2(0x41);
   PCA9635 board3(0x42);
   PCA9635 board4(0x43);
   PCA9635 board5(0x44);

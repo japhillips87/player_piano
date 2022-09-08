@@ -65,7 +65,6 @@ void Schedule::tryToScheduleNoteOff(uint8_t noteId, uint8_t velocity) {
   }
 }
 
-// TODO: need to test this
 void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
   bool isActive = piano.getSustainIsActive();
   unsigned long isActiveSetAt = piano.getSustainIsActiveSetAt();
@@ -80,10 +79,10 @@ void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
       }
     } else if (value <= SUSTAIN_THRESHOLD && isActive) {
       if (isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION <= now) {
-        commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, now));
+        scheduleSustainOff();
       } else {
         unsigned long delayedTime = isActiveSetAt + SUSTAIN_TOTAL_ON_DURATION;
-        commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_INDEX, OFF_PWM, delayedTime));
+        scheduleSustainOff(delayedTime);
       }
     }
   } else if (number == 123) {
@@ -95,9 +94,19 @@ void Schedule::scheduleSustainOn(unsigned long delayedTime /*=millis()*/) {
   PCA9635 *board = piano.getSustainBoard();
 
   piano.setSustainIsActive(true, delayedTime);
-  commands.push_back(Command(board, SUSTAIN_INDEX, ON_PWM, delayedTime));
-  commands.push_back(Command(board, SUSTAIN_INDEX, SUSTAIN_VELOCITY, delayedTime + SUSTAIN_STARTUP_DURATION));
-  commands.push_back(Command(board, SUSTAIN_INDEX, SUSTAIN_HOLD_PWM, delayedTime + SUSTAIN_TOTAL_ON_DURATION));
+  commands.push_back(Command(board, SUSTAIN_1_INDEX, ON_PWM, delayedTime));
+  commands.push_back(Command(board, SUSTAIN_1_INDEX, SUSTAIN_VELOCITY, delayedTime + SUSTAIN_STARTUP_DURATION));
+  commands.push_back(Command(board, SUSTAIN_1_INDEX, SUSTAIN_HOLD_PWM, delayedTime + SUSTAIN_TOTAL_ON_DURATION));
+
+  commands.push_back(Command(board, SUSTAIN_2_INDEX, ON_PWM, delayedTime));
+  commands.push_back(Command(board, SUSTAIN_2_INDEX, SUSTAIN_VELOCITY, delayedTime + SUSTAIN_STARTUP_DURATION));
+  commands.push_back(Command(board, SUSTAIN_2_INDEX, SUSTAIN_HOLD_PWM, delayedTime + SUSTAIN_TOTAL_ON_DURATION));
+}
+
+void Schedule::scheduleSustainOff(unsigned long delayedTime /*=millis()*/) {
+  piano.setSustainIsActive(false, delayedTime);
+  commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_1_INDEX, OFF_PWM, delayedTime));
+  commands.push_back(Command(piano.getSustainBoard(), SUSTAIN_2_INDEX, OFF_PWM, delayedTime));
 }
 
 void Schedule::connected() {
@@ -137,6 +146,7 @@ void Schedule::allOff() {
   for (Note &note: piano.notes) {
     scheduleNoteOff(note);
   }
+  scheduleSustainOff();
 }
 
 void Schedule::execute() {

@@ -8,8 +8,9 @@
 Schedule schedule;
 Piano piano;
 
-// uncomment to run calibration
-// const bool CALIBRATE = true;
+// change to true to calibrate
+const bool CALIBRATE = true;
+const int BUTTON_PIN = 6;
 
 BLEMIDI_CREATE_INSTANCE("Amadeus", MIDI)
 
@@ -26,15 +27,15 @@ void setup() {
   MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { schedule.tryToScheduleNoteOff(noteId, velocity); });
   MIDI.setHandleControlChange([](uint8_t _, uint8_t number, uint8_t value) { schedule.tryToScheduleSustain(number, value); });
 
-  // if (CALIBRATE) {
-  //   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  //   uncomment one of the following to run calibration. do these in order
-  //   runStartupCalibration();
-  //   runVelocityValueCalibration();
-  //   runVelocityDurationCalibration();
-  //   runHoldCalibration();
-  //   runRepeatingCalibration();
-  // }
+  if (CALIBRATE) {
+    pinMode(BUTTON_PIN, INPUT_PULLUP);
+    // uncomment one of the following to run calibration. do these in order
+    // runStartupCalibration();
+    // runVelocityValueCalibration();
+    // runVelocityDurationCalibration();
+    // runHoldCalibration();
+    // runRepeatingCalibration();
+  }
 }
 
 void loop() {
@@ -60,7 +61,6 @@ void loop() {
  * it will let us play really fast.
  */
 void runStartupCalibration() {
-  const int BUTTON_PIN = 6;
   int buttonState = 0;
   unsigned long potPrintTime = millis();
   unsigned long noteScheduleTime = millis();
@@ -99,7 +99,6 @@ void runStartupCalibration() {
  * This should be set for each note. The pwm values provided in the midi file for velocity will be mapped within this range.
  */
 void runVelocityValueCalibration() {
-  const int BUTTON_PIN = 6;
   int buttonState = 0;
   unsigned long potPrintTime = millis();
   unsigned long noteScheduleTime = millis();
@@ -138,7 +137,6 @@ void runVelocityValueCalibration() {
  * able to play fast. Ideally, you will set this to the lowest value that will not affect final note volume.
  */
 void runVelocityDurationCalibration() {
-  const int BUTTON_PIN = 6;
   int buttonState = 0;
   unsigned long potPrintTime = millis();
   unsigned long noteScheduleTime = millis();
@@ -179,7 +177,6 @@ void runVelocityDurationCalibration() {
  */
 
 void runRepeatingCalibration() {
-  const int BUTTON_PIN = 6;
   int buttonState = 0;
   unsigned long potPrintTime = millis();
   unsigned long noteScheduleTime = millis();
