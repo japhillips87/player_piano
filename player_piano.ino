@@ -10,7 +10,7 @@ Piano piano;
 
 // change to true to calibrate
 const bool CALIBRATE = true;
-const int BUTTON_PIN = 6;
+const int BUTTON_PIN = 4;
 
 BLEMIDI_CREATE_INSTANCE("Amadeus", MIDI)
 

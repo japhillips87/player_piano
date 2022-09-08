@@ -86,7 +86,8 @@ void Schedule::tryToScheduleSustain(uint8_t number, uint8_t value) {
       }
     }
   } else if (number == 123) {
-    allOff();
+    // TODO: this is running a bunch of times. debug it
+    //allOff();
   }
 }
 
@@ -115,7 +116,7 @@ void Schedule::connected() {
 
   for (int noteId: noteIds) {
     Note &note = piano.find(noteId);
-    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay, BLUETOOTH_SOUND_DURATION);
+    scheduleNoteOnForDuration(note, MIDI_HALF_VELOCITY, delay, BLUETOOTH_SOUND_DURATION);
     delay += BLUETOOTH_SOUND_DELAY;
   }
 }
@@ -126,7 +127,7 @@ void Schedule::disconnected() {
 
   for (int noteId: noteIds) {
     Note &note = piano.find(noteId);
-    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay, BLUETOOTH_SOUND_DURATION);
+    scheduleNoteOnForDuration(note, MIDI_HALF_VELOCITY, delay, BLUETOOTH_SOUND_DURATION);
     delay += BLUETOOTH_SOUND_DELAY;
   }
 }
@@ -137,8 +138,8 @@ void Schedule::poweredOn() {
 
   for (int noteId: noteIds) {
     Note &note = piano.find(noteId);
-    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay, POWER_SOUND_DURATION_ONE);
-    scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), delay + POWER_SOUND_DELAY, POWER_SOUND_DURATION_TWO);
+    scheduleNoteOnForDuration(note, MIDI_HALF_VELOCITY, delay, POWER_SOUND_DURATION_ONE);
+    scheduleNoteOnForDuration(note, MIDI_HALF_VELOCITY, delay + POWER_SOUND_DELAY, POWER_SOUND_DURATION_TWO);
   }
 }
 
