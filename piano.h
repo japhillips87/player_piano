@@ -19,17 +19,17 @@ const int SUSTAIN_2_INDEX = 14;
 class Piano {
   bool sustainIsActive;
   unsigned long sustainIsActiveSetAt;
-  PCA9635 *sustainBoard;
+  // PCA9635 &sustainBoard;
 
   public:
-    Piano();
+    Piano() : sustainIsActive(false), sustainIsActiveSetAt(millis()) {};
     void initialize();
     Note& find(int id);
     bool getSustainIsActive();
     unsigned long getSustainIsActiveSetAt();
     void setSustainIsActive(bool isActive, unsigned long now);
-    void setSustainBoard(PCA9635 *board);
-    PCA9635 *getSustainBoard();
+    // void setSustainBoard(PCA9635 &board);
+    // PCA9635 &getSustainBoard();
     void addNote(Note &note);
     vector<Note> notes;
 };

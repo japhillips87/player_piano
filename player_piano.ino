@@ -7,6 +7,7 @@
 
 Schedule schedule;
 Piano piano;
+PCA9635 board1(0x40);
 
 // change to true to calibrate
 const bool CALIBRATE = true;
@@ -16,16 +17,23 @@ BLEMIDI_CREATE_INSTANCE("Amadeus", MIDI)
 
 void setup() {
   Serial.begin(115200);
-  piano.initialize();
-  schedule.poweredOn();
   MIDI.begin(MIDI_CHANNEL_OMNI);
 
 
-  BLEMIDI.setHandleConnected([]() { schedule.connected(); });
-  BLEMIDI.setHandleDisconnected([]() { schedule.disconnected(); });
+//  BLEMIDI.setHandleConnected([]() { schedule.connected(); });
+//  BLEMIDI.setHandleDisconnected([]() { schedule.disconnected(); });
   MIDI.setHandleNoteOn([](uint8_t _, uint8_t noteId, uint8_t velocity) { schedule.tryToScheduleNoteOn(noteId, velocity); });
   MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { schedule.tryToScheduleNoteOff(noteId, velocity); });
   MIDI.setHandleControlChange([](uint8_t _, uint8_t number, uint8_t value) { schedule.tryToScheduleSustain(number, value); });
+
+  piano.initialize();
+//  schedule.poweredOn();
+
+  board1.begin(21, 22, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  for (int channel = 0; channel < board1.channelCount(); channel++) {
+    board1.setLedDriverMode(channel, PCA9635_LEDPWM);
+    board1.write1(channel, 0);
+  }
 
   if (CALIBRATE) {
     pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -40,7 +48,22 @@ void setup() {
 
 void loop() {
   MIDI.read();
-  schedule.execute();
+  // loop through the commands and find which ones need to run
+  // schedule.execute();
+  for (auto it = schedule.commands.begin(); it != schedule.commands.end(); it++) {
+    if (it->getRunAt() <= millis()) {
+      int midiId = it->getMidiId();
+      if (midiId >= 21 && midiId <= 35) {
+        board1.write1(midiId - 21, it->getPwm());
+      }
+      Serial.print("RUNNING COMMAND: ");
+      Serial.print("Midi Id: ");
+      Serial.print(it->getMidiId());
+      Serial.print(", PWM: ");
+      Serial.println(it->getPwm());
+      schedule.commands.erase(it--);
+    }
+  }
 }
 
 /*
@@ -60,37 +83,37 @@ void loop() {
  * where the solenoid moves and starts to actuate the key, without actually making any sound. This value is super important because
  * it will let us play really fast.
  */
-void runStartupCalibration() {
-  int buttonState = 0;
-  unsigned long potPrintTime = millis();
-  unsigned long noteScheduleTime = millis();
-  schedule.execute();
+// void runStartupCalibration() {
+//   int buttonState = 0;
+//   unsigned long potPrintTime = millis();
+//   unsigned long noteScheduleTime = millis();
+//   schedule.execute();
 
-  for (Note &note: piano.notes) {
-    Serial.print("Calibrating note: ");
-    Serial.println(note.getMidiId());
-    delay(2000); // make sure there is enough time to release the button for the next note
+//   for (Note &note: piano.notes) {
+//     Serial.print("Calibrating note: ");
+//     Serial.println(note.getMidiId());
+//     delay(2000); // make sure there is enough time to release the button for the next note
 
-    while (!buttonState) {
-      int potValue = analogRead(A0);
-      // map a range of 0-1023 to a range of 5-45
-      float mappedValue =  5 + ((45 - 5) / (1023.0)) * (potValue - 5);
+//     while (!buttonState) {
+//       int potValue = analogRead(A0);
+//       // map a range of 0-1023 to a range of 5-45
+//       float mappedValue =  5 + ((45 - 5) / (1023.0)) * (potValue - 5);
 
-      if (millis() - potPrintTime >= 100) {
-        Serial.print("Mapped pot value = ");
-        Serial.println(mappedValue);
-        potPrintTime = millis();
-      }
-      if (millis() - noteScheduleTime >= 1000) {
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), ON_PWM, millis()));
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, millis() + mappedValue));
-        noteScheduleTime = millis();
-      }
+//       if (millis() - potPrintTime >= 100) {
+//         Serial.print("Mapped pot value = ");
+//         Serial.println(mappedValue);
+//         potPrintTime = millis();
+//       }
+//       if (millis() - noteScheduleTime >= 1000) {
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), ON_PWM, millis()));
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, millis() + mappedValue));
+//         noteScheduleTime = millis();
+//       }
 
-      buttonState = digitalRead(BUTTON_PIN);
-    }
-  }
-}
+//       buttonState = digitalRead(BUTTON_PIN);
+//     }
+//   }
+// }
 
 /*
  * For velocity value calibration, you are looking for the minimum velocity where the note will sound and the maximum velocity
@@ -98,112 +121,112 @@ void runStartupCalibration() {
  *
  * This should be set for each note. The pwm values provided in the midi file for velocity will be mapped within this range.
  */
-void runVelocityValueCalibration() {
-  int buttonState = 0;
-  unsigned long potPrintTime = millis();
-  unsigned long noteScheduleTime = millis();
-  schedule.execute();
+// void runVelocityValueCalibration() {
+//   int buttonState = 0;
+//   unsigned long potPrintTime = millis();
+//   unsigned long noteScheduleTime = millis();
+//   schedule.execute();
 
-  for (Note &note: piano.notes) {
-    Serial.print("Calibrating note: ");
-    Serial.println(note.getMidiId());
-    delay(2000); // make sure there is enough time to release the button for the next note
+//   for (Note &note: piano.notes) {
+//     Serial.print("Calibrating note: ");
+//     Serial.println(note.getMidiId());
+//     delay(2000); // make sure there is enough time to release the button for the next note
 
-    while (!buttonState) {
-      int potValue = analogRead(A0);
-      // map a range of 0-1023 to a range of 0-255
-      float mappedValue =  255 / 1023.0 * potValue;
+//     while (!buttonState) {
+//       int potValue = analogRead(A0);
+//       // map a range of 0-1023 to a range of 0-255
+//       float mappedValue =  255 / 1023.0 * potValue;
 
-      if (millis() - potPrintTime >= 100) {
-        Serial.print("Mapped pot value = ");
-        Serial.println(mappedValue);
-        potPrintTime = millis();
-      }
-      if (millis() - noteScheduleTime >= 1000) {
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), ON_PWM, millis()));
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), mappedValue, millis() + STARTUP_DURATION));
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, millis() + STARTUP_DURATION + 500));
-        noteScheduleTime = millis();
-      }
+//       if (millis() - potPrintTime >= 100) {
+//         Serial.print("Mapped pot value = ");
+//         Serial.println(mappedValue);
+//         potPrintTime = millis();
+//       }
+//       if (millis() - noteScheduleTime >= 1000) {
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), ON_PWM, millis()));
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), mappedValue, millis() + STARTUP_DURATION));
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, millis() + STARTUP_DURATION + 500));
+//         noteScheduleTime = millis();
+//       }
 
-      buttonState = digitalRead(BUTTON_PIN);
-    }
-  }
-}
+//       buttonState = digitalRead(BUTTON_PIN);
+//     }
+//   }
+// }
 
-/*
- * For duration of velocity, you are looking for the lowest duration that gives you the same volume note. If the
- * duration gets too low, the note won't have the correct calibrated volume. If it gets too high, you won't be
- * able to play fast. Ideally, you will set this to the lowest value that will not affect final note volume.
- */
-void runVelocityDurationCalibration() {
-  int buttonState = 0;
-  unsigned long potPrintTime = millis();
-  unsigned long noteScheduleTime = millis();
-  schedule.execute();
+// /*
+//  * For duration of velocity, you are looking for the lowest duration that gives you the same volume note. If the
+//  * duration gets too low, the note won't have the correct calibrated volume. If it gets too high, you won't be
+//  * able to play fast. Ideally, you will set this to the lowest value that will not affect final note volume.
+//  */
+// void runVelocityDurationCalibration() {
+//   int buttonState = 0;
+//   unsigned long potPrintTime = millis();
+//   unsigned long noteScheduleTime = millis();
+//   schedule.execute();
 
-  for (Note &note: piano.notes) {
-    Serial.print("Calibrating note: ");
-    Serial.println(note.getMidiId());
-    delay(2000); // make sure there is enough time to release the button for the next note
+//   for (Note &note: piano.notes) {
+//     Serial.print("Calibrating note: ");
+//     Serial.println(note.getMidiId());
+//     delay(2000); // make sure there is enough time to release the button for the next note
 
-    while (!buttonState) {
-      int potValue = analogRead(A0);
-      // map a range of 0-1023 to a range of 0-200
-      float mappedValue =  200 / 1023.0 * potValue;
+//     while (!buttonState) {
+//       int potValue = analogRead(A0);
+//       // map a range of 0-1023 to a range of 0-200
+//       float mappedValue =  200 / 1023.0 * potValue;
 
-      if (millis() - potPrintTime >= 100) {
-        Serial.print("Mapped pot value = ");
-        Serial.println(mappedValue);
-        potPrintTime = millis();
-      }
-      if (millis() - noteScheduleTime >= 1000) {
-        // TODO: we can't use this method. It will use hold velocities
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), ON_PWM, millis()));
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), MIDI_HALF_VELOCITY, millis() + STARTUP_DURATION));
-        schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, millis() + STARTUP_DURATION + mappedValue));
-        noteScheduleTime = millis();
-      }
+//       if (millis() - potPrintTime >= 100) {
+//         Serial.print("Mapped pot value = ");
+//         Serial.println(mappedValue);
+//         potPrintTime = millis();
+//       }
+//       if (millis() - noteScheduleTime >= 1000) {
+//         // TODO: we can't use this method. It will use hold velocities
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), ON_PWM, millis()));
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), MIDI_HALF_VELOCITY, millis() + STARTUP_DURATION));
+//         schedule.commands.push_back(Command(note.getBoard(), note.getBoardIndex(), OFF_PWM, millis() + STARTUP_DURATION + mappedValue));
+//         noteScheduleTime = millis();
+//       }
 
-      buttonState = digitalRead(BUTTON_PIN);
-    }
-  }
-}
+//       buttonState = digitalRead(BUTTON_PIN);
+//     }
+//   }
+// }
 
-/*
- * The purpose of the repeating calibration is to find the minimum deactivation time between notes.
- * If the deactivation time is too high, the same note cannot be played rapidly. If the time is too
- * low, the notes will fail to play twice in a row.
- */
+// /*
+//  * The purpose of the repeating calibration is to find the minimum deactivation time between notes.
+//  * If the deactivation time is too high, the same note cannot be played rapidly. If the time is too
+//  * low, the notes will fail to play twice in a row.
+//  */
 
-void runRepeatingCalibration() {
-  int buttonState = 0;
-  unsigned long potPrintTime = millis();
-  unsigned long noteScheduleTime = millis();
-  schedule.execute();
+// void runRepeatingCalibration() {
+//   int buttonState = 0;
+//   unsigned long potPrintTime = millis();
+//   unsigned long noteScheduleTime = millis();
+//   schedule.execute();
 
-  for (Note &note: piano.notes) {
-    Serial.print("Calibrating note: ");
-    Serial.println(note.getMidiId());
-    delay(2000); // make sure there is enough time to release the button for the next note
+//   for (Note &note: piano.notes) {
+//     Serial.print("Calibrating note: ");
+//     Serial.println(note.getMidiId());
+//     delay(2000); // make sure there is enough time to release the button for the next note
 
-    while (!buttonState) {
-      int potValue = analogRead(A0);
-      // map a range of 0-1023 to a range of 0-300
-      float mappedValue =  300 / 1023.0 * potValue;
+//     while (!buttonState) {
+//       int potValue = analogRead(A0);
+//       // map a range of 0-1023 to a range of 0-300
+//       float mappedValue =  300 / 1023.0 * potValue;
 
-      if (millis() - potPrintTime >= 100) {
-        Serial.print("Mapped pot value = ");
-        Serial.println(mappedValue);
-        potPrintTime = millis();
-      }
-      if (millis() - noteScheduleTime >= 1000) {
-        schedule.scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), millis(), TOTAL_ON_DURATION);
-        schedule.scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), millis() + mappedValue, TOTAL_ON_DURATION);
-        noteScheduleTime = millis();
-      }
+//       if (millis() - potPrintTime >= 100) {
+//         Serial.print("Mapped pot value = ");
+//         Serial.println(mappedValue);
+//         potPrintTime = millis();
+//       }
+//       if (millis() - noteScheduleTime >= 1000) {
+//         schedule.scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), millis(), TOTAL_ON_DURATION);
+//         schedule.scheduleNoteOnForDuration(note, note.calculateVelocity(MIDI_HALF_VELOCITY), millis() + mappedValue, TOTAL_ON_DURATION);
+//         noteScheduleTime = millis();
+//       }
 
-      buttonState = digitalRead(BUTTON_PIN);
-    }
-  }
-}
+//       buttonState = digitalRead(BUTTON_PIN);
+//     }
+//   }
+// }

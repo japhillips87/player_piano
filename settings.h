@@ -2,8 +2,10 @@
 
 const int OFF_PWM = 0;
 const int ON_PWM = 255;
-const int STARTUP_DURATION = 10;
-const int VELOCITY_DURATION = 80;
+// was 10
+const int STARTUP_DURATION = 50;
+// was 80
+const int VELOCITY_DURATION = 180;
 const int TOTAL_ON_DURATION = STARTUP_DURATION + VELOCITY_DURATION;
 const int DEACTIVATE_TIME_REQUIRED = 100;
 const int NOTE_HOLD_PWM = 50;

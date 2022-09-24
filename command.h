@@ -5,15 +5,14 @@
 
 class Command {
   private:
-    PCA9635 *board;
-    int i2cIndex;
+    int midiId;
     int pwm;
     unsigned long runAt;
 
   public:
-    Command(PCA9635 *board, int i2cIndex, int pwm, unsigned long runAt);
-    PCA9635 *getBoard();
-    int getI2cIndex();
+    Command(int midiId, int pwm, unsigned long runAt)
+      : midiId(midiId), pwm(pwm), runAt(runAt) {};
     int getPwm();
+    int getMidiId();
     unsigned long getRunAt();
 };

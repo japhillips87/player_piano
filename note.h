@@ -11,21 +11,16 @@ using namespace std;
 class Note {
   private:
     int midiId;
-    // TODO: use the PCA9635 instance instead of the address
-    //uint8_t boardAddress;
-    PCA9635 *board;
-    int boardIndex;
     int minVelocity;
     int maxVelocity;
     bool isActive;
     unsigned long isActiveSetAt;
-    
+
   public:
-    Note(int midiId, PCA9635 *board, int boardIndex, int minVelocity, int maxVelocity);
+    Note(int midiId, int minVelocity, int maxVelocity)
+      : midiId(midiId), minVelocity(minVelocity), maxVelocity(maxVelocity), isActive(false), isActiveSetAt(millis()) {};
 
     void setIsActive(bool isActive, unsigned long now);
-    PCA9635 *getBoard();
-    int getBoardIndex();
     int calculateVelocity(int midiVelocity);
     bool getIsActive();
     unsigned long getIsActiveSetAt();
