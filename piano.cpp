@@ -16,8 +16,6 @@ Note& Piano::find(int id) {
 }
 
 void Piano::initialize() {
-  int sda_pin = 21;
-  int scl_pin = 22;
 
 //  PCA9635 board2(0x41);
 //  PCA9635 board3(0x42);
@@ -33,21 +31,21 @@ void Piano::initialize() {
 //  board6.begin(sda_pin, scl_pin);
 //  board7.begin(sda_pin, scl_pin);
 
-  this->addNote(*new Note(21, 0, 255));
-  this->addNote(*new Note(22, 0, 255));
-  this->addNote(*new Note(23, 0, 255));
-  this->addNote(*new Note(24, 0, 255));
-  this->addNote(*new Note(25, 0, 255));
-  this->addNote(*new Note(26, 0, 255));
-  this->addNote(*new Note(27, 0, 255));
-  this->addNote(*new Note(28, 0, 255));
-  this->addNote(*new Note(29, 0, 255));
-  this->addNote(*new Note(30, 0, 255));
-  this->addNote(*new Note(31, 0, 255));
-  this->addNote(*new Note(32, 0, 255));
-  this->addNote(*new Note(33, 0, 255));
-  this->addNote(*new Note(34, 0, 255));
-  this->addNote(*new Note(35, 0, 255));
+  this->addNote(*new Note(21, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(22, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(23, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(24, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(25, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(26, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(27, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(28, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(29, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(30, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(31, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(32, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(33, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(34, NOTE_MIN_PWM, NOTE_MAX_PWM));
+  this->addNote(*new Note(35, NOTE_MIN_PWM, NOTE_MAX_PWM));
 //  this->addNote(*new Note(36, &board2, 0, 0, 255));
 //  this->addNote(*new Note(37, &board2, 1, 0, 255));
 //  this->addNote(*new Note(38, &board2, 2, 0, 255));
