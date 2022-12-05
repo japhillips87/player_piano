@@ -9,7 +9,6 @@ void Schedule::tryToScheduleNoteOn(uint8_t noteId, uint8_t velocity) {
     Note &note = piano.find(noteId);
     bool isActive = note.getIsActive();
     unsigned long isActiveSetAt = note.getIsActiveSetAt();
-    // TODO: this makes things very sluggish if notes are played really fast. delaying adds up after time.
 
     // Only schedule a note if it is not currently active. If the note has been
     // recently deactivated but hasn't had time to reset, delay the activation just a bit.
@@ -30,8 +29,7 @@ void Schedule::scheduleNoteOn(Note &note, int velocity, unsigned long delayedTim
 
   note.setIsActive(true, delayedTime);
   commands.push_back(Command(midiId, ON_PWM, delayedTime));
-  // TODO: change ON_PWM back to mappedVelocity
-  commands.push_back(Command(midiId, ON_PWM, delayedTime + STARTUP_DURATION));
+  commands.push_back(Command(midiId, mappedVelocity, delayedTime + STARTUP_DURATION));
   commands.push_back(Command(midiId, NOTE_HOLD_PWM, delayedTime + TOTAL_ON_DURATION));
 }
 

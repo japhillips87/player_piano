@@ -8,8 +8,14 @@
 Schedule schedule;
 Piano piano;
 PCA9635 board1(0x40);
+PCA9635 board2(0x41);
+PCA9635 board3(0x42);
+PCA9635 board4(0x43);
+PCA9635 board5(0x44);
+PCA9635 board6(0x45);
+PCA9635 board7(0x46);
 
-int potPin = 36;
+const int potPin = 36;
 
 BLEMIDI_CREATE_INSTANCE("Amadeus", MIDI)
 
@@ -26,11 +32,41 @@ void setup() {
   piano.initialize();
 //  schedule.poweredOn();
 
-  board1.begin(21, 22, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board1.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board1.channelCount(); channel++) {
     board1.setLedDriverMode(channel, PCA9635_LEDPWM);
     board1.write1(channel, 0);
   }
+//  board2.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+//  for (int channel = 0; channel < board2.channelCount(); channel++) {
+//    board2.setLedDriverMode(channel, PCA9635_LEDPWM);
+//    board2.write1(channel, 0);
+//  }
+//  board3.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+//  for (int channel = 0; channel < board3.channelCount(); channel++) {
+//    board3.setLedDriverMode(channel, PCA9635_LEDPWM);
+//    board3.write1(channel, 0);
+//  }
+//  board4.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+//  for (int channel = 0; channel < board4.channelCount(); channel++) {
+//    board4.setLedDriverMode(channel, PCA9635_LEDPWM);
+//    board4.write1(channel, 0);
+//  }  
+//  board5.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+//  for (int channel = 0; channel < board5.channelCount(); channel++) {
+//    board5.setLedDriverMode(channel, PCA9635_LEDPWM);
+//    board5.write1(channel, 0);
+//  }
+//  board6.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+//  for (int channel = 0; channel < board6.channelCount(); channel++) {
+//    board6.setLedDriverMode(channel, PCA9635_LEDPWM);
+//    board6.write1(channel, 0);
+//  }  
+//  board7.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+//  for (int channel = 0; channel < board7.channelCount(); channel++) {
+//    board7.setLedDriverMode(channel, PCA9635_LEDPWM);
+//    board7.write1(channel, 0);
+//  }
 
   // uncomment one of the following to run calibration. do these in order
   // runStartupCalibration();
@@ -47,8 +83,20 @@ void loop() {
   for (auto it = schedule.commands.begin(); it != schedule.commands.end(); it++) {
     if (it->getRunAt() <= millis()) {
       int midiId = it->getMidiId();
-      if (midiId >= 21 && midiId <= 35) {
-        board1.write1(midiId - 21, it->getPwm());
+      if (midiId >= BOARD_1_MIN_ID && midiId <= BOARD_1_MAX_ID) {
+        board1.write1(midiId - BOARD_1_MIN_ID, it->getPwm());
+//      } else if (midiId >= BOARD_2_MIN_ID && midiId <= BOARD_2_MAX_ID) {
+//        board2.write1(midiId - BOARD_2_MIN_ID, it->getPwm());
+//      } else if (midiId >= BOARD_3_MIN_ID && midiId <= BOARD_3_MAX_ID) {
+//        board3.write1(midiId - BOARD_3_MIN_ID, it->getPwm());
+//      } else if (midiId >= BOARD_4_MIN_ID && midiId <= BOARD_4_MAX_ID) {
+//        board4.write1(midiId - BOARD_4_MIN_ID, it->getPwm());
+//      } else if (midiId >= BOARD_5_MIN_ID && midiId <= BOARD_5_MAX_ID) {
+//        board5.write1(midiId - BOARD_5_MIN_ID, it->getPwm());
+//      } else if (midiId >= BOARD_6_MIN_ID && midiId <= BOARD_6_MAX_ID) {
+//        board6.write1(midiId - BOARD_6_MIN_ID, it->getPwm());
+//      } else if (midiId >= BOARD_7_MIN_ID && midiId <= BOARD_7_MAX_ID) {
+//        board7.write1(midiId - BOARD_7_MIN_ID, it->getPwm());
       }
       Serial.print("RUNNING COMMAND: ");
       Serial.print("Midi Id: ");
