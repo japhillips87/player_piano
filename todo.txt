@@ -1,0 +1,20 @@
+notes needs to use NoteSchedule
+schedule can be deleted (after borrowing some of the code)
+commands needs to be moved to the piano
+
+
+loop method changes:
+  - loop through notes and check the schedule
+    - within checkSchedule() see if notes can be played as is or if they need
+      to be modified
+    - if they need to be modified, do it and add to commands
+    - if they can be played as is, add to commands
+    - if there is nothing to do, move on with no-op
+  - loop through piano commands
+    - play commands at specified time
+
+MIDI callback changes:
+  - handle note on callback through the piano
+    - something like piano.handleNoteOn(midiId, velocity)
+      - the handleNoteOn method will be responsible for looking up note and
+        adding the correct info to the noteSchedule

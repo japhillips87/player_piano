@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "command.h"
 #include "settings.h"
+#include "note.h"
 
 #pragma once
 

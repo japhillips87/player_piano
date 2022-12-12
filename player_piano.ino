@@ -51,7 +51,7 @@ void setup() {
 //  for (int channel = 0; channel < board4.channelCount(); channel++) {
 //    board4.setLedDriverMode(channel, PCA9635_LEDPWM);
 //    board4.write1(channel, 0);
-//  }  
+//  }
 //  board5.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
 //  for (int channel = 0; channel < board5.channelCount(); channel++) {
 //    board5.setLedDriverMode(channel, PCA9635_LEDPWM);
@@ -61,7 +61,7 @@ void setup() {
 //  for (int channel = 0; channel < board6.channelCount(); channel++) {
 //    board6.setLedDriverMode(channel, PCA9635_LEDPWM);
 //    board6.write1(channel, 0);
-//  }  
+//  }
 //  board7.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
 //  for (int channel = 0; channel < board7.channelCount(); channel++) {
 //    board7.setLedDriverMode(channel, PCA9635_LEDPWM);
@@ -78,8 +78,12 @@ void setup() {
 
 void loop() {
   MIDI.read();
+  // loop through the notes and and see if their schedule needs to be adjusted
+  for (int midiId = 21; midiId <= 108; midiId++) {
+    Note &note = piano.find(midiId);
+  }
+
   // loop through the commands and find which ones need to run
-  // schedule.execute();
   for (auto it = schedule.commands.begin(); it != schedule.commands.end(); it++) {
     if (it->getRunAt() <= millis()) {
       int midiId = it->getMidiId();

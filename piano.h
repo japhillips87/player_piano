@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "PCA9635.h"
 #include "note.h"
+#include "command.h"
 
 #pragma once
 
@@ -19,7 +20,6 @@ const int SUSTAIN_2_INDEX = 14;
 class Piano {
   bool sustainIsActive;
   unsigned long sustainIsActiveSetAt;
-  // PCA9635 &sustainBoard;
 
   public:
     Piano() : sustainIsActive(false), sustainIsActiveSetAt(millis()) {};
@@ -28,10 +28,12 @@ class Piano {
     bool getSustainIsActive();
     unsigned long getSustainIsActiveSetAt();
     void setSustainIsActive(bool isActive, unsigned long now);
-    // void setSustainBoard(PCA9635 &board);
-    // PCA9635 &getSustainBoard();
+    void handleNoteOn(uint8_t midiId, uint8_t velocity);
+    void handleNoteOff(uint8_t midiId, uint8_t velocity);
+    void handleControlChange(uint8_t number, uint8_t value);
     void addNote(Note &note);
     vector<Note> notes;
+    vector<Command> commands;
 };
 
 extern Piano piano;
