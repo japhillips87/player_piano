@@ -84,6 +84,8 @@ void loop() {
   }
 
   // loop through the commands and find which ones need to run
+  // TODO: this needs to use piano.commands instead of schedule.commands
+  // not sure how making the vector store &Command will affect it though
   for (auto it = schedule.commands.begin(); it != schedule.commands.end(); it++) {
     if (it->getRunAt() <= millis()) {
       int midiId = it->getMidiId();

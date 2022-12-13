@@ -6,7 +6,6 @@
 #include "settings.h"
 #include "PCA9635.h"
 #include "note_schedule.h"
-#include "piano.h" // may not need this. depends on where piano is declared.
 
 #pragma once
 
@@ -26,10 +25,16 @@ class Note {
       : midiId(midiId), minVelocity(minVelocity), maxVelocity(maxVelocity), isActive(false), isActiveSetAt(millis()) {};
 
     void setIsActive(bool isActive, unsigned long now);
-    void addToSchedule(int velocity, unsigned long delayedTime);
-    void checkSchedule();
+    void addToSchedule(string type, int velocity, unsigned long delayedTime);
+    void processSchedule();
     int calculateVelocity(int midiVelocity);
+    int getMidiId();
+    void commandNote(NoteSchedule& scheduledNote);
+    void commandNoteOn(NoteSchedule& scheduledNote);
+    void commandFastNoteOn();
+    void commandNoteOff(NoteSchedule& scheduledNote);
+    // TODO: these should be able to be removed. the note's state should be able to be
+    // obtained from the schedule
     bool getIsActive();
     unsigned long getIsActiveSetAt();
-    int getMidiId();
 };

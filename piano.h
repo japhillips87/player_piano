@@ -32,6 +32,7 @@ class Piano {
     void handleNoteOff(uint8_t midiId, uint8_t velocity);
     void handleControlChange(uint8_t number, uint8_t value);
     void addNote(Note &note);
+    void addCommand(Command &command);
     vector<Note> notes;
     vector<Command> commands;
 };

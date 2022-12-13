@@ -21,6 +21,7 @@ const int SUSTAIN_HOLD_PWM = 50;
 const int SUSTAIN_DEACTIVATE_TIME_REQUIRED = 200;
 const int SDA_PIN = 21;
 const int SCL_PIN = 22;
+const int DEFAULT_DELAY = 150;
 // BOARD_MIDI_VALUES
 const int BOARD_1_MIN_ID = 21;
 const int BOARD_1_MAX_ID = 35;
