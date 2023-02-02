@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <stdint.h>
 #include <Arduino.h>
-#include "PCA9635.h"
 #include "note.h"
 #include "command.h"
 
@@ -18,16 +17,17 @@ const int SUSTAIN_1_INDEX = 13;
 const int SUSTAIN_2_INDEX = 14;
 
 class Piano {
-  bool sustainIsActive;
-  unsigned long sustainIsActiveSetAt;
+  // bool sustainIsActive;
+  // unsigned long sustainIsActiveSetAt;
 
   public:
-    Piano() : sustainIsActive(false), sustainIsActiveSetAt(millis()) {};
+    Piano() {};
     void initialize();
     Note& find(int id);
-    bool getSustainIsActive();
-    unsigned long getSustainIsActiveSetAt();
-    void setSustainIsActive(bool isActive, unsigned long now);
+    // bool getSustainIsActive();
+    // unsigned long getSustainIsActiveSetAt();
+    // void setSustainIsActive(bool isActive, unsigned long now);
+    void scheduleNote(uint8_t midiId, uint8_t velocity);
     void handleNoteOn(uint8_t midiId, uint8_t velocity);
     void handleNoteOff(uint8_t midiId, uint8_t velocity);
     void handleControlChange(uint8_t number, uint8_t value);

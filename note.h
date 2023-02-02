@@ -4,8 +4,6 @@
 #include <Arduino.h>
 #include <vector>
 #include "settings.h"
-#include "PCA9635.h"
-#include "note_schedule.h"
 
 #pragma once
 
@@ -13,28 +11,32 @@ using namespace std;
 
 class Note {
   private:
+    typedef std::vector<unsigned long> scheduleV_t;
+    enum ScheduleID
+    {
+      STARTUP,
+      ACTIVATION,
+      VELOCITY,
+      ON,
+      DEACTIVATION,
+      OFF
+    };
+    scheduleV_t schedule[6];
     int midiId;
-    int minVelocity;
-    int maxVelocity;
-    bool isActive;
-    unsigned long isActiveSetAt;
-    vector<NoteSchedule> schedule;
+    int instances = 0;
+    int startupMs = MAX_STARTUP_MS;
+    int deactivateMs = MAX_DEACTIVATE_MS;
+    unsigned long timeSinceActivation = 0;
 
   public:
-    Note(int midiId, int minVelocity, int maxVelocity)
-      : midiId(midiId), minVelocity(minVelocity), maxVelocity(maxVelocity), isActive(false), isActiveSetAt(millis()) {};
+    Note(int midiId)
+      : midiId(midiId) {};
 
     void setIsActive(bool isActive, unsigned long now);
-    void addToSchedule(string type, int velocity, unsigned long delayedTime);
+    void addToSchedule(int velocity);
+    void checkForErrors();
+    void resetSchedule();
     void processSchedule();
     int calculateVelocity(int midiVelocity);
     int getMidiId();
-    void commandNote(NoteSchedule& scheduledNote);
-    void commandNoteOn(NoteSchedule& scheduledNote);
-    void commandFastNoteOn();
-    void commandNoteOff(NoteSchedule& scheduledNote);
-    // TODO: these should be able to be removed. the note's state should be able to be
-    // obtained from the schedule
-    bool getIsActive();
-    unsigned long getIsActiveSetAt();
 };

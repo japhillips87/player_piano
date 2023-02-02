@@ -3,72 +3,170 @@
 
 #pragma once
 
-bool Note::getIsActive() { return this->isActive; }
-unsigned long Note::getIsActiveSetAt() { return this->isActiveSetAt; }
 int Note::getMidiId() { return this->midiId; }
 
-void Note::setIsActive(bool isActive, unsigned long now) {
-  this->isActive = isActive;
-  this->isActiveSetAt = now;
-}
-
 int Note::calculateVelocity(int midiVelocity) {
-  double slope = (this->maxVelocity - this->minVelocity) / 128.0;
-  int mappedVelocity = this->minVelocity + round(slope * midiVelocity);
+  // TODO: use a volume multiplier derived from a potentiometer
+  double slope = (NOTE_MAX_PWM - NOTE_MIN_PWM) / 128.0;
+  int mappedVelocity = NOTE_MIN_PWM + round(slope * midiVelocity);
   return mappedVelocity;
 }
 
-void Note::addToSchedule(string type, int velocity, unsigned long delayedTime) {
-  schedule.push_back(*new NoteSchedule(type, velocity, delayedTime));
+void Note::addToSchedule(int velocity) {
+	unsigned long ms = millis();
+	unsigned long msAndDelay = ms + FULL_DELAY;
+
+	if(velocity > 0) //if note on command
+	{
+		int velocityMs = noteVelocityMs[velocity - 1];
+		instances++;
+		if(instances == 1) //if note is scheduled to deactivate (was 0 before instances++)
+		{
+			if(msAndDelay - velocityMs - MAX_STARTUP_MS >= schedule[OFF].back()) //if new note can be scheduled with current scheduling
+			{
+				schedule[STARTUP].   push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[ACTIVATION].push_back(msAndDelay - velocityMs);
+				schedule[ON].        push_back(msAndDelay);
+				schedule[VELOCITY].  push_back(velocity);
+				timeSinceActivation == ms;
+			} else if(msAndDelay - MAX_DEACTIVATE_MS - velocityMs - MAX_STARTUP_MS >= schedule[ON].back()) //if current scheduling can be modified to still schedule the new note
+			{
+				schedule[DEACTIVATION].push_back(msAndDelay - velocityMs - MAX_STARTUP_MS - MAX_DEACTIVATE_MS);
+				schedule[DEACTIVATION].erase(----schedule[DEACTIVATION].end());
+				schedule[OFF].         push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[OFF].         erase(----schedule[OFF].end());
+				schedule[STARTUP].     push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[ACTIVATION].  push_back(msAndDelay - velocityMs);
+				schedule[ON].          push_back(msAndDelay);
+				schedule[VELOCITY].    push_back(velocity);
+				timeSinceActivation == ms;
+			} else if(msAndDelay - FAST_DEACTIVATE_MS - velocityMs - MAX_STARTUP_MS >= schedule[ACTIVATION].back()) //if current scheduling can be modified with fast deactivation to schedule the new note
+			{
+				schedule[ON].          push_back(msAndDelay - velocityMs - MAX_STARTUP_MS - FAST_DEACTIVATE_MS);
+				schedule[ON].          erase(----schedule[ON].end());
+				schedule[DEACTIVATION].push_back(msAndDelay - velocityMs - MAX_STARTUP_MS - FAST_DEACTIVATE_MS);
+				schedule[DEACTIVATION].erase(----schedule[DEACTIVATION].end());
+				schedule[OFF].         push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[OFF].         erase(----schedule[OFF].end());
+				schedule[STARTUP].     push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[ACTIVATION].  push_back(msAndDelay - velocityMs);
+				schedule[ON].          push_back(msAndDelay);
+				schedule[VELOCITY].    push_back(velocity);
+				timeSinceActivation == ms;
+			}
+		} else //note is scheduled to activate and not deactivate
+		{
+			if(msAndDelay - MAX_DEACTIVATE_MS - velocityMs - MAX_STARTUP_MS >= schedule[ON].back()) //if current scheduling can be modified to still schedule the new note
+			{
+				schedule[DEACTIVATION].push_back(msAndDelay - velocityMs - MAX_STARTUP_MS - MAX_DEACTIVATE_MS);
+				schedule[OFF].         push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[STARTUP].     push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[ACTIVATION].  push_back(msAndDelay - velocityMs);
+				schedule[ON].          push_back(msAndDelay);
+				schedule[VELOCITY].    push_back(velocity);
+			} else if(msAndDelay - FAST_DEACTIVATE_MS - velocityMs - MAX_STARTUP_MS - 35 >= schedule[ACTIVATION].back() && schedule[ACTIVATION].back() > 0) //if current scheduling can be modified with fast deactivation to still schedule the new note
+			{
+				schedule[ON].          push_back(msAndDelay - velocityMs - MAX_STARTUP_MS - FAST_DEACTIVATE_MS);
+				schedule[ON].          erase(----schedule[ON].end());
+				schedule[DEACTIVATION].push_back(msAndDelay - velocityMs - MAX_STARTUP_MS - FAST_DEACTIVATE_MS);
+				schedule[OFF].         push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[STARTUP].     push_back(msAndDelay - velocityMs - MAX_STARTUP_MS);
+				schedule[ACTIVATION].  push_back(msAndDelay - velocityMs);
+				schedule[ON].          push_back(msAndDelay);
+				schedule[VELOCITY].    push_back(velocity);
+			}
+		}
+	} else if(instances > 0 /*&& velocity == 0*/) //if note off command and note is not already off
+	{
+		if(instances > 1) //if this isn't the last instance
+		{
+			//remove instance and exit
+			instances--;
+		} else //this is the last instance of the note and it should be scheduled
+		{
+			instances = 0;
+			timeSinceActivation == 0;
+
+			if(msAndDelay - FAST_DEACTIVATE_MS - 35 >= schedule[ACTIVATION].back() && msAndDelay - FAST_DEACTIVATE_MS - 35 <= schedule[ON].back() && schedule[ACTIVATION].back() > 0) //if it's efficient to use fast deactivation
+			{
+				schedule[ON].          push_back(msAndDelay - FAST_DEACTIVATE_MS);
+				schedule[ON].          erase(----schedule[ON].end());
+				schedule[DEACTIVATION].push_back(msAndDelay - FAST_DEACTIVATE_MS);
+				schedule[OFF].         push_back(msAndDelay);
+			} else if(msAndDelay - MAX_DEACTIVATE_MS >= schedule[ON].back()) //if regular deactivation works
+			{
+				schedule[DEACTIVATION].push_back(msAndDelay - MAX_DEACTIVATE_MS);
+				schedule[OFF].         push_back(msAndDelay);
+			} else //if all else fails the key shouldn't stay stuck on
+			{
+				if(schedule[ACTIVATION].back() > 0)
+				{
+					//immediately deactivate the key as soon as it makes sound
+					schedule[ON].          push_back(schedule[ACTIVATION].back() + 35);
+					schedule[ON].          erase(----schedule[ON].end());
+					schedule[DEACTIVATION].push_back(schedule[ACTIVATION].back());
+					schedule[OFF].         push_back(schedule[ACTIVATION].back() + FAST_DEACTIVATE_MS);
+				} else //this should never happen
+				{
+					schedule[DEACTIVATION].push_back(msAndDelay);
+					schedule[OFF].         push_back(msAndDelay + MAX_DEACTIVATE_MS);
+				}
+			}
+		}
+	}
+}
+
+void Note::checkForErrors() {
+	unsigned long ms = millis();
+	if(ms >= timeSinceActivation + NOTE_TIMEOUT_MS && timeSinceActivation > 0) resetSchedule();
+	if(schedule[ON].size() > 1 && ms >= schedule[ON].at(1) + NOTE_TIMEOUT_MS) resetSchedule();
+}
+
+void Note::resetSchedule() {
+	for(int index = 0; index < 6; index++) {
+		schedule[index].resize(1);
+		schedule[index].at(0) = 0;
+	}
+
+	schedule[OFF].push_back(millis());
+
+	timeSinceActivation = 0;
+	instances = 0;
+  piano.addCommand(*new Command(this->getMidiId(), OFF_PWM));
 }
 
 void Note::processSchedule() {
-  if (schedule.size() == 0) { // there is no schedule for this note
-    return;
-  } else if (schedule.size() == 1) {
-    if (schedule.front().getRunAt() <= millis()) { // there is only one scheduled event and the delay has been reached
-      commandNote(schedule.front());
-      schedule.erase(schedule.begin());
-    } else { // there is only one scheduled event, but the delay hasn't been reached
-      return;
-    }
-  } else { // there is more than one event
-    unsigned long now = millis();
-    for (auto it = schedule.begin(); it != schedule.end(); it++) {
-      /*
-      * if (note has more than one thing scheduled) {
-      *   if there is enough time to schedule normally { do it }
-      *   else if there is not enough time { adjust the schedule }
-      * } else (there is only one thing scheduled and delay hasn't been reached) { no-op }
-      *
-      *
-      */
-      // compare runAt to the current time.
-      // compare runAt of the first command to the next scheduled command if it exists
-      // be sure to remove things from schedule as they are added to commands
-      // if (now <= it->getRunAt())
-    }
-  }
-  //piano.addCommand(*new Command(48, 255, millis()));
-}
+	//reverse stack behavior: erases stack from the bottom
+	unsigned long ms = millis();
 
-void Note::commandNote(NoteSchedule &scheduledNote) {
-  if (scheduledNote.getType() == "ON") {
-    commandNoteOn(scheduledNote);
-  } else {
-    commandNoteOff(scheduledNote);
-  }
-}
-
-void Note::commandNoteOn(NoteSchedule &scheduledNote) {
-  unsigned long delayedTime = scheduledNote.getRunAt();
-
-  // TODO: set the isActive flag with correct time
-  piano.addCommand(*new Command(this->getMidiId(), ON_PWM, delayedTime));
-  piano.addCommand(*new Command(this->getMidiId(), this->calculateVelocity(scheduledNote.getVelocity()), delayedTime + STARTUP_DURATION));
-  piano.addCommand(*new Command(this->getMidiId(), NOTE_HOLD_PWM, delayedTime + TOTAL_ON_DURATION));
-}
-
-void Note::commandNoteOff(NoteSchedule &scheduledNote) {
-  piano.addCommand(*new Command(this->getMidiId(), OFF_PWM, scheduledNote.getRunAt()));
+	if(schedule[OFF].size() > 1 && schedule[DEACTIVATION].size() > 1 &&
+		ms >= schedule[OFF].at(1) && schedule[OFF].at(1) >= schedule[DEACTIVATION].at(1)) //first because sometimes off and on times are the same
+	{
+		schedule[DEACTIVATION].erase(++schedule[DEACTIVATION].begin());
+	}
+	if(schedule[STARTUP].size() > 1 && schedule[OFF].size() > 1 && ms >= schedule[STARTUP].at(1) &&
+		schedule[STARTUP].at(1) >= schedule[OFF].at(1))
+	{
+		schedule[OFF].erase(++schedule[OFF].begin());
+    piano.addCommand(*new Command(this->getMidiId(), ON_PWM));
+	}
+	if(schedule[ACTIVATION].size() > 1 && schedule[STARTUP].size() > 1 && schedule[VELOCITY].size() > 1 &&
+		ms >= schedule[ACTIVATION].at(1) && schedule[ACTIVATION].at(1) >= schedule[STARTUP].at(1))
+	{
+		schedule[STARTUP].erase(++schedule[STARTUP].begin());
+    piano.addCommand(*new Command(this->getMidiId(), this->calculateVelocity(schedule[VELOCITY].at(1))));
+	}
+	if(schedule[ON].size() > 1 && schedule[ACTIVATION].size() > 1 &&
+		ms >= schedule[ON].at(1) && schedule[ON].at(1) >= schedule[ACTIVATION].at(1))
+	{
+		schedule[ACTIVATION].erase(++schedule[ACTIVATION].begin());
+		schedule[VELOCITY].erase(++schedule[VELOCITY].begin());
+    piano.addCommand(*new Command(this->getMidiId(), NOTE_HOLD_PWM));
+	}
+	if(schedule[DEACTIVATION].size() > 1 && schedule[ON].size() > 1 &&
+		ms >= schedule[DEACTIVATION].at(1) && schedule[DEACTIVATION].at(1) >= schedule[ON].at(1))
+	{
+		schedule[ON].erase(++schedule[ON].begin());
+    piano.addCommand(*new Command(this->getMidiId(), OFF_PWM));
+	}
 }
