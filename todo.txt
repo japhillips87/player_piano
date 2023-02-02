@@ -18,3 +18,19 @@ MIDI callback changes:
     - something like piano.handleNoteOn(midiId, velocity)
       - the handleNoteOn method will be responsible for looking up note and
         adding the correct info to the noteSchedule
+
+
+processSchedule:
+  - if there is no schedule
+    - no-op
+  - else if the delay has been reached
+    - command the note
+  - else
+    - if there is only one scheduled event
+      - no-op
+    - else
+      - check the first two scheduled events
+        - if they have enough time
+          - no-op
+        - else
+          - figure out what needs to be changed and command the note for the proper time

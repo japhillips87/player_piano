@@ -25,10 +25,14 @@ void Note::addToSchedule(string type, int velocity, unsigned long delayedTime) {
 void Note::processSchedule() {
   if (schedule.size() == 0) { // there is no schedule for this note
     return;
-  } else if (schedule.size() == 1 && schedule.front().getRunAt() <= millis()) { // there is only one scheduled event and the delay has been reached
-    commandNote(schedule.front());
-    schedule.erase(schedule.begin());
-  } else { // there is either more than one event or the delay hasn't been reached
+  } else if (schedule.size() == 1) {
+    if (schedule.front().getRunAt() <= millis()) { // there is only one scheduled event and the delay has been reached
+      commandNote(schedule.front());
+      schedule.erase(schedule.begin());
+    } else { // there is only one scheduled event, but the delay hasn't been reached
+      return;
+    }
+  } else { // there is more than one event
     unsigned long now = millis();
     for (auto it = schedule.begin(); it != schedule.end(); it++) {
       /*
