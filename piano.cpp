@@ -11,11 +11,15 @@ Note& Piano::find(int id) {
 
 void Piano::initialize() {
   for (int id = 21; id <= 108; id++) {
-    addNote(*new Note(id));
+    Note &note = *new Note(id);
+    note.resetSchedule();
+    addNote(note);
   }
 }
 
 void Piano::scheduleNote(uint8_t midiId, uint8_t velocity) {
   Note &note = find(midiId);
+  Serial.print("Scheduling note: ");
+  Serial.println(midiId);
   note.addToSchedule(velocity);
 }

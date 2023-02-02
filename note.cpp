@@ -18,7 +18,7 @@ void Note::addToSchedule(int velocity) {
 
 	if(velocity > 0) //if note on command
 	{
-		int velocityMs = noteVelocityMs[velocity - 1];
+		int velocityMs = round(((-25 * velocity) / (double)127) + VELOCITY_MS);
 		instances++;
 		if(instances == 1) //if note is scheduled to deactivate (was 0 before instances++)
 		{

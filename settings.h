@@ -31,7 +31,6 @@ const int SUSTAIN_OFF_MS     = 50;
 const int NOTE_TIMEOUT_MS    = 10000;
 const int SUSTAIN_TIMEOUT_MS = 30000;
 const int AUTO_RESET_MS      = 360000;
-static int noteVelocityMs[127];
 // Delay Settings
 const int FULL_DELAY = MAX_STARTUP_MS + VELOCITY_MS + MAX_DEACTIVATE_MS;
 // BOARD_MIDI_VALUES

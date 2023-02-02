@@ -28,11 +28,6 @@ void setup() {
   piano.initialize();
 //  schedule.poweredOn();
 
-  for(int velocityIndex = 0; velocityIndex < 127; velocityIndex++) {
-    //function created through graphing velocity times and creating a function that best fit
-    noteVelocityMs[velocityIndex] = round(((-25 * velocityIndex) / (double)127) + VELOCITY_MS);
-  }
-
   // UPDATE: this needs to use the addToSchedule function
   MIDI.setHandleNoteOn([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
   MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
@@ -78,6 +73,7 @@ void setup() {
 void loop() {
   MIDI.read();
   // loop through the notes and and see if their schedule needs to be adjusted
+//  Serial.println("Looping through notes");
   for (auto it = piano.notes.begin(); it != piano.notes.end(); it++) {
     it->processSchedule();
     it->checkForErrors();
