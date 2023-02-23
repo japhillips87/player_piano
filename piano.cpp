@@ -1,7 +1,7 @@
 #include "piano.h"
 
 void Piano::addNote(Note &note) { notes.push_back(note); }
-void Piano::addCommand(Command &command) { commands.push_back(command); }
+void Piano::addCommand(Command command) { commands.push_back(command); }
 
 
 Note& Piano::find(int id) {

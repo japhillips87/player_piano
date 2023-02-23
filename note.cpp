@@ -132,7 +132,7 @@ void Note::resetSchedule() {
 
 	timeSinceActivation = 0;
 	instances = 0;
-  piano.addCommand(*new Command(this->getMidiId(), OFF_PWM));
+  piano.addCommand(Command(this->getMidiId(), OFF_PWM));
 }
 
 void Note::processSchedule() {
@@ -148,25 +148,25 @@ void Note::processSchedule() {
 		schedule[STARTUP].at(1) >= schedule[OFF].at(1))
 	{
 		schedule[OFF].erase(++schedule[OFF].begin());
-    piano.addCommand(*new Command(this->getMidiId(), ON_PWM));
+    piano.addCommand(Command(this->getMidiId(), ON_PWM));
 	}
 	if(schedule[ACTIVATION].size() > 1 && schedule[STARTUP].size() > 1 && schedule[VELOCITY].size() > 1 &&
 		ms >= schedule[ACTIVATION].at(1) && schedule[ACTIVATION].at(1) >= schedule[STARTUP].at(1))
 	{
 		schedule[STARTUP].erase(++schedule[STARTUP].begin());
-    piano.addCommand(*new Command(this->getMidiId(), this->calculateVelocity(schedule[VELOCITY].at(1))));
+    piano.addCommand(Command(this->getMidiId(), this->calculateVelocity(schedule[VELOCITY].at(1))));
 	}
 	if(schedule[ON].size() > 1 && schedule[ACTIVATION].size() > 1 &&
 		ms >= schedule[ON].at(1) && schedule[ON].at(1) >= schedule[ACTIVATION].at(1))
 	{
 		schedule[ACTIVATION].erase(++schedule[ACTIVATION].begin());
 		schedule[VELOCITY].erase(++schedule[VELOCITY].begin());
-    piano.addCommand(*new Command(this->getMidiId(), NOTE_HOLD_PWM));
+    piano.addCommand(Command(this->getMidiId(), NOTE_HOLD_PWM));
 	}
 	if(schedule[DEACTIVATION].size() > 1 && schedule[ON].size() > 1 &&
 		ms >= schedule[DEACTIVATION].at(1) && schedule[DEACTIVATION].at(1) >= schedule[ON].at(1))
 	{
 		schedule[ON].erase(++schedule[ON].begin());
-    piano.addCommand(*new Command(this->getMidiId(), OFF_PWM));
+    piano.addCommand(Command(this->getMidiId(), OFF_PWM));
 	}
 }

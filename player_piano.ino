@@ -32,17 +32,17 @@ void setup() {
   MIDI.setHandleNoteOn([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
   MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
 //  MIDI.setHandleControlChange([](uint8_t _, uint8_t number, uint8_t value) { piano.tryToScheduleSustain(number, value); });
-  board1.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
 
+  board1.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board1.channelCount(); channel++) {
     board1.setLedDriverMode(channel, PCA9635_LEDPWM);
     board1.write1(channel, 0);
   }
-//  board2.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
-//  for (int channel = 0; channel < board2.channelCount(); channel++) {
-//    board2.setLedDriverMode(channel, PCA9635_LEDPWM);
-//    board2.write1(channel, 0);
-//  }
+  board2.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  for (int channel = 0; channel < board2.channelCount(); channel++) {
+    board2.setLedDriverMode(channel, PCA9635_LEDPWM);
+    board2.write1(channel, 0);
+  }
 //  board3.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
 //  for (int channel = 0; channel < board3.channelCount(); channel++) {
 //    board3.setLedDriverMode(channel, PCA9635_LEDPWM);
@@ -80,14 +80,12 @@ void loop() {
   }
 
   // loop through the commands and find which ones need to run
-  // TODO: this needs to use piano.commands instead of schedule.commands
-  // not sure how making the vector store &Command will affect it though
   for (auto it = piano.commands.begin(); it != piano.commands.end(); it++) {
     int midiId = it->getMidiId();
     if (midiId >= BOARD_1_MIN_ID && midiId <= BOARD_1_MAX_ID) {
       board1.write1(midiId - BOARD_1_MIN_ID, it->getPwm());
-//    } else if (midiId >= BOARD_2_MIN_ID && midiId <= BOARD_2_MAX_ID) {
-//      board2.write1(midiId - BOARD_2_MIN_ID, it->getPwm());
+    } else if (midiId >= BOARD_2_MIN_ID && midiId <= BOARD_2_MAX_ID) {
+      board2.write1(midiId - BOARD_2_MIN_ID, it->getPwm());
 //    } else if (midiId >= BOARD_3_MIN_ID && midiId <= BOARD_3_MAX_ID) {
 //      board3.write1(midiId - BOARD_3_MIN_ID, it->getPwm());
 //    } else if (midiId >= BOARD_4_MIN_ID && midiId <= BOARD_4_MAX_ID) {
@@ -98,12 +96,12 @@ void loop() {
 //      board6.write1(midiId - BOARD_6_MIN_ID, it->getPwm());
 //    } else if (midiId >= BOARD_7_MIN_ID && midiId <= BOARD_7_MAX_ID) {
 //      board7.write1(midiId - BOARD_7_MIN_ID, it->getPwm());
-      Serial.print("RUNNING COMMAND: ");
-      Serial.print("Midi Id: ");
-      Serial.print(it->getMidiId());
-      Serial.print(", PWM: ");
-      Serial.println(it->getPwm());
-      piano.commands.erase(it--);
     }
+    Serial.print("RUNNING COMMAND: ");
+    Serial.print("Midi Id: ");
+    Serial.print(it->getMidiId());
+    Serial.print(", PWM: ");
+    Serial.println(it->getPwm());
+    piano.commands.erase(it--);
   }
 }
