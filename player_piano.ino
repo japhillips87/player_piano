@@ -43,26 +43,26 @@ void setup() {
     board2.setLedDriverMode(channel, PCA9635_LEDPWM);
     board2.write1(channel, 0);
   }
-//  board3.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
-//  for (int channel = 0; channel < board3.channelCount(); channel++) {
-//    board3.setLedDriverMode(channel, PCA9635_LEDPWM);
-//    board3.write1(channel, 0);
-//  }
-//  board4.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
-//  for (int channel = 0; channel < board4.channelCount(); channel++) {
-//    board4.setLedDriverMode(channel, PCA9635_LEDPWM);
-//    board4.write1(channel, 0);
-//  }
-//  board5.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
-//  for (int channel = 0; channel < board5.channelCount(); channel++) {
-//    board5.setLedDriverMode(channel, PCA9635_LEDPWM);
-//    board5.write1(channel, 0);
-//  }
-//  board6.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
-//  for (int channel = 0; channel < board6.channelCount(); channel++) {
-//    board6.setLedDriverMode(channel, PCA9635_LEDPWM);
-//    board6.write1(channel, 0);
-//  }
+  board3.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  for (int channel = 0; channel < board3.channelCount(); channel++) {
+    board3.setLedDriverMode(channel, PCA9635_LEDPWM);
+    board3.write1(channel, 0);
+  }
+  board4.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  for (int channel = 0; channel < board4.channelCount(); channel++) {
+    board4.setLedDriverMode(channel, PCA9635_LEDPWM);
+    board4.write1(channel, 0);
+  }
+  board5.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  for (int channel = 0; channel < board5.channelCount(); channel++) {
+    board5.setLedDriverMode(channel, PCA9635_LEDPWM);
+    board5.write1(channel, 0);
+  }
+  board6.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  for (int channel = 0; channel < board6.channelCount(); channel++) {
+    board6.setLedDriverMode(channel, PCA9635_LEDPWM);
+    board6.write1(channel, 0);
+  }
 //  board7.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
 //  for (int channel = 0; channel < board7.channelCount(); channel++) {
 //    board7.setLedDriverMode(channel, PCA9635_LEDPWM);
@@ -86,14 +86,14 @@ void loop() {
       board1.write1(midiId - BOARD_1_MIN_ID, it->getPwm());
     } else if (midiId >= BOARD_2_MIN_ID && midiId <= BOARD_2_MAX_ID) {
       board2.write1(midiId - BOARD_2_MIN_ID, it->getPwm());
-//    } else if (midiId >= BOARD_3_MIN_ID && midiId <= BOARD_3_MAX_ID) {
-//      board3.write1(midiId - BOARD_3_MIN_ID, it->getPwm());
-//    } else if (midiId >= BOARD_4_MIN_ID && midiId <= BOARD_4_MAX_ID) {
-//      board4.write1(midiId - BOARD_4_MIN_ID, it->getPwm());
-//    } else if (midiId >= BOARD_5_MIN_ID && midiId <= BOARD_5_MAX_ID) {
-//      board5.write1(midiId - BOARD_5_MIN_ID, it->getPwm());
-//    } else if (midiId >= BOARD_6_MIN_ID && midiId <= BOARD_6_MAX_ID) {
-//      board6.write1(midiId - BOARD_6_MIN_ID, it->getPwm());
+    } else if (midiId >= BOARD_3_MIN_ID && midiId <= BOARD_3_MAX_ID) {
+      board3.write1(midiId - BOARD_3_MIN_ID, it->getPwm());
+    } else if (midiId >= BOARD_4_MIN_ID && midiId <= BOARD_4_MAX_ID) {
+      board4.write1(midiId - BOARD_4_MIN_ID, it->getPwm());
+    } else if (midiId >= BOARD_5_MIN_ID && midiId <= BOARD_5_MAX_ID) {
+      board5.write1(midiId - BOARD_5_MIN_ID, it->getPwm());
+    } else if (midiId >= BOARD_6_MIN_ID && midiId <= BOARD_6_MAX_ID) {
+      board6.write1(midiId - BOARD_6_MIN_ID, it->getPwm());
 //    } else if (midiId >= BOARD_7_MIN_ID && midiId <= BOARD_7_MAX_ID) {
 //      board7.write1(midiId - BOARD_7_MIN_ID, it->getPwm());
     }

@@ -2,10 +2,10 @@
 
 const int OFF_PWM = 0;
 const int ON_PWM = 255;
-const int STARTUP_DURATION = 12;
-const int VELOCITY_DURATION = 40;
-const int TOTAL_ON_DURATION = STARTUP_DURATION + VELOCITY_DURATION;
-const int NOTE_HOLD_PWM = 35;
+//const int STARTUP_DURATION = 13;
+//const int VELOCITY_DURATION = 40;
+//const int TOTAL_ON_DURATION = STARTUP_DURATION + VELOCITY_DURATION;
+const int NOTE_HOLD_PWM = 50;
 const int NOTE_MIN_PWM = 70;
 const int NOTE_MAX_PWM = 160;
 const int NOTE_MID_PWM = (NOTE_MIN_PWM + NOTE_MAX_PWM) / 2;
@@ -20,9 +20,9 @@ const int MIDI_HALF_VELOCITY = (MIN_MIDI_VELOCITY + MAX_MIDI_VELOCITY) / 2;
 // const int SUSTAIN_DEACTIVATE_TIME_REQUIRED = 200;
 const int SDA_PIN = 21;
 const int SCL_PIN = 22;
-const int MIN_STARTUP_MS     = 18;
-const int MAX_STARTUP_MS     = 18;
-const int VELOCITY_MS        = 35;
+const int MIN_STARTUP_MS     = 15;
+const int MAX_STARTUP_MS     = 15;
+const int VELOCITY_MS        = 40;
 const int MIN_DEACTIVATE_MS  = 75;
 const int MAX_DEACTIVATE_MS  = 80;
 const int FAST_DEACTIVATE_MS = 52;
