@@ -6,10 +6,24 @@
 int Note::getMidiId() { return this->midiId; }
 
 int Note::calculateVelocity(int midiVelocity) {
-  // TODO: use a volume multiplier derived from a potentiometer
+  // read the pot value to set volume
+  int potValue = analogRead(POT_PIN);
+  // map a range of 0-4095 to a range of 0.5-1.5
+  float velocityScale =  0.5 + ((1.5 - 0.5) / (4096.0)) * (potValue - 0.5);
+
+  // map the midi range to the pwm range
   double slope = (NOTE_MAX_PWM - NOTE_MIN_PWM) / 128.0;
   int mappedVelocity = NOTE_MIN_PWM + round(slope * midiVelocity);
-  return mappedVelocity;
+
+  // scale the volume
+  int scaledVelocity = mappedVelocity * velocityScale;
+  if(scaledVelocity > NOTE_MAX_PWM) {
+    return NOTE_MAX_PWM;
+  } else if(scaledVelocity < NOTE_MIN_PWM) {
+    return NOTE_MIN_PWM;
+  } else {
+    return mappedVelocity;
+  }
 }
 
 void Note::addToSchedule(int velocity) {

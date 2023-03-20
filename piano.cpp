@@ -10,7 +10,7 @@ Note& Piano::find(int id) {
 }
 
 void Piano::initialize() {
-  for (int id = 21; id <= 108; id++) {
+  for (int id = MIN_NOTE_ID; id <= MAX_NOTE_ID; id++) {
     Note &note = *new Note(id);
     note.resetSchedule();
     addNote(note);
@@ -19,7 +19,11 @@ void Piano::initialize() {
 
 void Piano::scheduleNote(uint8_t midiId, uint8_t velocity) {
   Note &note = find(midiId);
-  Serial.print("Scheduling note: ");
-  Serial.println(midiId);
   note.addToSchedule(velocity);
+}
+
+void Piano::scheduleSustain(uint8_t channel, uint8_t number, uint8_t value) {
+  if(number == SUSTAIN_CONTROL_NUMBER && channel == 1) {
+    sustain.addToSchedule(value);
+  }
 }
