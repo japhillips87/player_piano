@@ -40,6 +40,7 @@ void Sustain::processSchedule() {
     ms >= schedule[ON].at(1) && schedule[ON].at(1) >= schedule[ACTIVATION].at(1))
   {
     schedule[ACTIVATION].erase(schedule[ACTIVATION].begin()++);
+    piano.addCommand(Command(SUSTAIN_COMMAND_ID, SUSTAIN_HOLD_PWM));
   }
   if(schedule[DEACTIVATION].size() > 1 && schedule[ON].size() > 1 &&
     ms >= schedule[DEACTIVATION].at(1) && schedule[DEACTIVATION].at(1) >= schedule[ON].at(1))

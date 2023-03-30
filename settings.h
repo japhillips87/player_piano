@@ -33,6 +33,7 @@ const int MIN_DEACTIVATE_MS  = 75;
 const int MAX_DEACTIVATE_MS  = 80;
 const int FAST_DEACTIVATE_MS = 52;
 const int SUSTAIN_ON_MS      = 91;
+const int SUSTAIN_HOLD_PWM   = 180;
 const int SUSTAIN_OFF_MS     = 50;
 const int NOTE_TIMEOUT_MS    = 10000;
 const int SUSTAIN_TIMEOUT_MS = 30000;
