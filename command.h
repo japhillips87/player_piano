@@ -1,4 +1,3 @@
-#include "note.h"
 #include <stdint.h>
 
 #pragma once
@@ -7,12 +6,10 @@ class Command {
   private:
     int midiId;
     int pwm;
-    unsigned long runAt;
 
   public:
-    Command(int midiId, int pwm, unsigned long runAt)
-      : midiId(midiId), pwm(pwm), runAt(runAt) {};
+    Command(int midiId, int pwm)
+      : midiId(midiId), pwm(pwm) {};
     int getPwm();
     int getMidiId();
-    unsigned long getRunAt();
 };
