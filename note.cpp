@@ -22,7 +22,7 @@ int Note::calculateVelocity(int midiVelocity) {
   } else if(scaledVelocity < NOTE_MIN_PWM) {
     return NOTE_MIN_PWM;
   } else {
-    return mappedVelocity;
+    return scaledVelocity;
   }
 }
 

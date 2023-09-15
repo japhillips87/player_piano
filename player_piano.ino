@@ -31,7 +31,7 @@ void setup() {
 
   // UPDATE: this needs to use the addToSchedule function
   MIDI.setHandleNoteOn([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
-  MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
+  MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, 0); });
   MIDI.setHandleControlChange([](uint8_t channel, uint8_t number, uint8_t value) { piano.scheduleSustain(channel, number, value); });
 
   board1.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
