@@ -33,38 +33,40 @@ void setup() {
   MIDI.setHandleNoteOn([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, velocity); });
   MIDI.setHandleNoteOff([](uint8_t _, uint8_t noteId, uint8_t velocity) { piano.scheduleNote(noteId, 0); });
   MIDI.setHandleControlChange([](uint8_t channel, uint8_t number, uint8_t value) { piano.scheduleSustain(channel, number, value); });
-
-  board1.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  
+  Wire.begin(SDA_PIN, SCL_PIN);
+  
+  board1.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board1.channelCount(); channel++) {
     board1.setLedDriverMode(channel, PCA9635_LEDPWM);
     board1.write1(channel, 0);
   }
-  board2.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board2.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board2.channelCount(); channel++) {
     board2.setLedDriverMode(channel, PCA9635_LEDPWM);
     board2.write1(channel, 0);
   }
-  board3.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board3.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board3.channelCount(); channel++) {
     board3.setLedDriverMode(channel, PCA9635_LEDPWM);
     board3.write1(channel, 0);
   }
-  board4.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board4.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board4.channelCount(); channel++) {
     board4.setLedDriverMode(channel, PCA9635_LEDPWM);
     board4.write1(channel, 0);
   }
-  board5.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board5.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board5.channelCount(); channel++) {
     board5.setLedDriverMode(channel, PCA9635_LEDPWM);
     board5.write1(channel, 0);
   }
-  board6.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board6.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board6.channelCount(); channel++) {
     board6.setLedDriverMode(channel, PCA9635_LEDPWM);
     board6.write1(channel, 0);
   }
-  board7.begin(SDA_PIN, SCL_PIN, PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
+  board7.begin(PCA9635_MODE1_NONE, PCA9635_MODE2_INVERT | PCA9635_MODE2_TOTEMPOLE);
   for (int channel = 0; channel < board7.channelCount(); channel++) {
     board7.setLedDriverMode(channel, PCA9635_LEDPWM);
     board7.write1(channel, 0);
